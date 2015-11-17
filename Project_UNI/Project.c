@@ -29,7 +29,7 @@
 static int score = 0; //게임점수
 static int level = 1; //게임레벨
 static int speed = 500;
-int board[BOARD_HEIGHT + 1][BOARD_WIDTH + 2] = { 0, };
+int board[BOARD_HEIGHT][BOARD_WIDTH + 1] = { 0, };
 
 // 키보드의 방향키와 스페이스에 대한 열거형 지정
 // _getch()가 반환하는 값이
@@ -61,10 +61,27 @@ void SetCur(int cursorLeft, int cursorTop)    // Console.SetCursorPosition(posX,
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
 
-// 보드 만들기
+// 보드 만들기(main3)
+void DrawBaord(void)
+{
+	srand(time(0));
+
+	int board_width, board_height;
+	for (board_height = 0; board_height < BOARD_HEIGHT - 1; board_height += 2) {
+		SetCur(7, board_height + 3);
+		for (board_width = 0; board_width <= BOARD_WIDTH; board_width += 2) {
+			board[board_height][board_width] = rand() % 5;
+			// 배열의 마지막을 비워야 한다니까는
+			//if (board_width == 0 || board_width == BOARD_WIDTH + 2 || board_height == 0) board[board_height][board_width] = 0;
+
+			if (board_width == BOARD_WIDTH) printf("%d", board[board_height][board_width]);
+			else printf("%-4d", board[board_height][board_width]);
+		}
+	}
+}
 
 
-// 게임판 그리기
+// 게임판 그리기(main2)
 void DrawField(void)
 {
 	int x, y;
@@ -117,7 +134,7 @@ void DrawField(void)
 	puts(" ");
 }
 
-//게임 설명
+//게임 설명(main1)
 void ConsoleInit()
 {
 	// 콘솔 초기화 및 시작 화면 구성 영역
@@ -142,4 +159,8 @@ void ConsoleInit()
 int main() {
 	ConsoleInit();
 	DrawField();
+	DrawBaord();
+
+
+	SetCur(0, 0);
 }
