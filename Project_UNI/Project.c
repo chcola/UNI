@@ -11,8 +11,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <conio.h>
 #include <windows.h>
+//#include <conio.h>
 
 #define true 1
 #define T 1
