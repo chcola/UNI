@@ -6,6 +6,7 @@
 //  Copyright ? 2015년 콜라맛홍삼. All rights reserved.
 //
 
+
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
@@ -20,16 +21,16 @@
 #define F 0
 #define bool int
 
-#define BOARD_WIDTH 20        // 게임 영역의 가로(열) >= 20 : ━
-#define BOARD_HEIGHT 20        // 게임 영역의 세로(행) >= 20 : ┃
-
+#define BOARD_WIDTH 8        // 게임 영역의 가로(열) >= 10 : ━
+#define BOARD_HEIGHT 8        // 게임 영역의 세로(행) >= 10 : ┃8
 #define BOARD_X 4 //보드 열 x좌표
 #define BOARD_Y 2 //보드 행 y좌표
 
 static int score = 0; //게임점수
 static int level = 1; //게임레벨
 static int speed = 500;
-int board[BOARD_HEIGHT][BOARD_WIDTH + 1] = { 0, };
+int board[BOARD_HEIGHT + 3][BOARD_WIDTH + 4] = { 0, };
+
 
 // 키보드의 방향키와 스페이스에 대한 열거형 지정
 // _getch()가 반환하는 값이
@@ -52,7 +53,7 @@ void CursorVisible(bool blnCursorVisible)    // Console.CursorVisible = false;
 }
 
 // 현재 콘솔 내의 커서 위치를 설정
-void SetCur(int cursorLeft, int cursorTop)    // Console.SetCursorPosition(posX, posY);
+void SetCursors(int cursorLeft, int cursorTop)    // Console.SetCursorPosition(posX, posY);
 {
 	int posX = cursorLeft;
 	int posY = cursorTop;
@@ -61,23 +62,80 @@ void SetCur(int cursorLeft, int cursorTop)    // Console.SetCursorPosition(posX,
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
 
-// 보드 만들기(main3)
-void DrawBaord(void)
+// 게임 시작..
+// 커서가 가리키는 위치의 유니코드 배경 색 바꾸기.
+// 0,0일때 8 + 2*x, +2* y +3 위치에 배경색 설정 후 printf("유니"); 스위치문 갖다 넣기
+void StartGame() {
+	return 0;
+}
+
+// 보드 배열 표시하기
+void DrawBoard(void) {
+	int board_width, board_height;
+	for (board_height = 0; board_height < BOARD_HEIGHT; board_height ++) {
+		SetCursors(8, 2 * board_height + 3);
+		for (board_width = 0; board_width < BOARD_WIDTH; board_width++) {
+			if (board_width == BOARD_WIDTH) {
+				switch (board[board_height][board_width]) {
+				case 1: printf("◆"); break;
+				case 2: printf("♥"); break;
+				case 3: printf("♣"); break;
+				case 4: printf("♠"); break;
+				case 5: printf("★"); break;
+				}
+			}
+			else {
+				switch (board[board_height][board_width]) {
+				case 1: printf("◆  "); break;
+				case 2: printf("♥  "); break;
+				case 3: printf("♣  "); break;
+				case 4: printf("♠  "); break;
+				case 5: printf("★  "); break;
+				}
+			} //else 종료
+		} // 안쪽 for 종료
+	} // 바깥 for 종료
+
+	SetCursors(7, 3);
+}
+
+// 맞출 수 있는 것이 3개 이상인지 확인. 없으면 MakeBoard() 재실행
+// 바꾸지 않고 3개가 겹치면 터트리기 먼저.(터지는 것 구현 해도, 표시되면 안되니 따로 만들것.)
+// 오른쪽이랑 바꾸고(바꾸는 함수 구현하여 사용), 오른쪽, 아래랑 3개 되는지 확인.
+// 아래와 바꾸고 반복.
+
+void CreateBoard();
+ConfirmBoard() {
+	int x_axis, y_axis, count = 0;
+	for (y_axis = 0; y_axis < BOARD_HEIGHT; y_axis++) {
+		for (x_axis = 0; x_axis < BOARD_WIDTH; x_axis++) {
+			if (board[y_axis][x_axis] == board[y_axis][x_axis + 1] && board[y_axis][x_axis + 1] == board[y_axis][x_axis + 2])
+				count++;
+			if (board[y_axis][x_axis] == board[y_axis + 1][x_axis] && board[y_axis + 1][x_axis] == board[y_axis + 2][x_axis])
+				count++;
+		}
+	}
+
+	if (count <= 3) CreateBoard();
+	return 0;
+}
+
+// 보드 배열 만들기(main3)
+void CreateBoard(void)
 {
 	srand(time(0));
 
 	int board_width, board_height;
-	for (board_height = 0; board_height < BOARD_HEIGHT - 1; board_height += 2) {
-		SetCur(7, board_height + 3);
-		for (board_width = 0; board_width <= BOARD_WIDTH; board_width += 2) {
-			board[board_height][board_width] = rand() % 5;
-			// 배열의 마지막을 비워야 한다니까는
+	for (board_height = 0; board_height < BOARD_HEIGHT; board_height++) {
+		for (board_width = 0; board_width <= BOARD_WIDTH; board_width++) {
+			board[board_height][board_width] = rand() % 5 + 1;
+			// 배열의 마지막을 비워야 한다면
 			//if (board_width == 0 || board_width == BOARD_WIDTH + 2 || board_height == 0) board[board_height][board_width] = 0;
-
-			if (board_width == BOARD_WIDTH) printf("%d", board[board_height][board_width]);
-			else printf("%-4d", board[board_height][board_width]);
 		}
 	}
+
+	//ConfirmBoard(); 보드에 맞출 수 있는것이 3개 이상인지 확인, 없으면 MakeBoard 실행
+	DrawBoard();
 }
 
 
@@ -87,41 +145,41 @@ void DrawField(void)
 	int x, y;
 
 	//위 보드 라인
-	for (x = 1; x <= BOARD_WIDTH + 1; x++)
+	for (x = 1; x <= 2 * BOARD_WIDTH + 1; x++)
 	{
-		board[BOARD_HEIGHT][x] = 1; //board 배열 중앙 1인식
-		SetCur((BOARD_X)+x * 2, BOARD_Y);  //콘솔좌표
+		board[2 * BOARD_HEIGHT][x] = 1; //board 배열 중앙 1인식
+		SetCursors((BOARD_X)+x * 2, BOARD_Y);  //콘솔좌표
 		printf("━");
 	}
 
 	//아래 보드 라인
-	for (x = 1; x <= BOARD_WIDTH + 1; x++)
+	for (x = 1; x <= 2 * BOARD_WIDTH + 1; x++)
 	{
-		board[BOARD_HEIGHT][x] = 1; //board 배열 중앙 1인식
-		SetCur((BOARD_X)+x * 2, BOARD_Y + BOARD_HEIGHT);  //콘솔좌표
+		board[2 * BOARD_HEIGHT][x] = 1; //board 배열 중앙 1인식
+		SetCursors((BOARD_X)+x * 2, BOARD_Y + 2 * BOARD_HEIGHT);  //콘솔좌표
 		printf("━");
 	}
 
 	//왼쪽 보드 라인
-	for (y = 0; y < BOARD_HEIGHT + 1; y++)
+	for (y = 0; y < 2 * BOARD_HEIGHT + 1; y++)
 	{
 		board[y][0] = 1; //board 배열 왼쪽 1인식
-		SetCur(BOARD_X, BOARD_Y + y);
+		SetCursors(BOARD_X, BOARD_Y + y);
 		if (y == 0)
 			printf("┏");
-		else if (y == BOARD_HEIGHT)
+		else if (y == 2 * BOARD_HEIGHT)
 			printf("┗");
 		else
 			printf("┃");
 	}
 	//오른쪽 보드 라인
-	for (y = 0; y < BOARD_HEIGHT + 1; y++)
+	for (y = 0; y < 2 * BOARD_HEIGHT + 1; y++)
 	{
-		board[y][BOARD_WIDTH + 1] = 1; //board 배열 오른쪽 1인식
-		SetCur(BOARD_X + (BOARD_WIDTH + 2) * 2, BOARD_Y + y);
+		board[y][2 * BOARD_WIDTH + 1] = 1; //board 배열 오른쪽 1인식
+		SetCursors(BOARD_X + (2 * BOARD_WIDTH + 2) * 2, BOARD_Y + y);
 		if (y == 0)
 			printf("┓");
-		else if (y == BOARD_HEIGHT)
+		else if (y == 2 * BOARD_HEIGHT)
 			printf("┛");
 		else
 			printf("┃");
@@ -153,14 +211,14 @@ void ConsoleInit()
 	_getch();
 	system("cls");            // Console.Clear();
 	CursorVisible(false);    // 커서 숨기기
-	SetCur(0, 0); //보드표시 시작위치 설정
+	SetCursors(0, 0); //보드표시 시작위치 설정
 }
 
 int main() {
 	ConsoleInit();
 	DrawField();
-	DrawBaord();
+	CreateBoard();
+	StartGame();
 
-
-	SetCur(0, 0);
+	SetCursors(0, 0);
 }

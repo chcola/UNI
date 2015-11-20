@@ -25,4 +25,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="by 한나.txt">
+      <Filter>소스 파일</Filter>
+    </Text>
+  </ItemGroup>
 </Project>
