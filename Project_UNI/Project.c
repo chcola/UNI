@@ -21,8 +21,8 @@
 #define F 0
 #define bool int
 
-#define BOARD_WIDTH 10        // 게임 영역의 가로(열) : ━
-#define BOARD_HEIGHT 10        // 게임 영역의 세로(행) : ┃
+#define BOARD_WIDTH 8        // 게임 영역의 가로(열) : ━
+#define BOARD_HEIGHT 8        // 게임 영역의 세로(행) : ┃
 
 #define BOARD_X 4 //보드 열 x좌표
 #define BOARD_Y 2 //보드 행 y좌표
@@ -32,7 +32,7 @@ static int level = 1; //게임레벨
 static int speed = 500;
 int board[BOARD_HEIGHT + 3][BOARD_WIDTH + 4] = { 0, };
 int *s;
-
+int Bcolor = 00;
 
 // 키보드의 방향키와 스페이스에 대한 열거형 지정
 // _getch()가 반환하는 값이
@@ -53,9 +53,23 @@ void CursorVisible(bool blnCursorVisible)    // Console.CursorVisible = false;
 	cursorInfo.bVisible = blnCursorVisible;
 	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
 }
+
 void color(int n) {
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), n);
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), Bcolor + n);
 }
+void BackColor(char t) {
+	switch (t) {
+	case 'B': Bcolor = 16; break;
+	case 'G': Bcolor = 32; break;
+	case 'S': Bcolor = 48; break;
+	case 'R': Bcolor = 64; break;
+	case 'P': Bcolor = 80; break;
+	case 'Y': Bcolor = 96; break;
+	case 'W': Bcolor = 128; break;
+	default: Bcolor = 0; break;
+	}
+}
+
 
 // 현재 콘솔 내의 커서 위치를 설정
 void gotoxy(int x, int y, const char* s)
@@ -75,6 +89,9 @@ void SetCursors(int cursorLeft, int cursorTop)    // Console.SetCursorPosition(p
 	COORD pos = { posX, posY };
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
+
+
+
 void DrawBoard(int i, int j);
 void fff(int *p) {
 	int x, y;
@@ -82,14 +99,14 @@ void fff(int *p) {
 	n = &board[0][0];
 	x = ((p - n)) / 14;
 	y = ((p - n)) % 14;
-	if (x<10 && y<13) {
+	if (x < 10 && y < 13) {
 		while (1) {
 
 			DrawBoard(y, x);
 			Sleep(100);
 			gotoxy(2 + BOARD_X + y * 2, 1 + BOARD_Y + x * 2, "  ");
 			Sleep(100);
-			if (kbhit())break;
+			if (_kbhit())break;
 		}
 		DrawBoard(y, x);
 	}
@@ -106,8 +123,8 @@ void StartGame() {
 	s = &board[0][0];
 	fff(s);
 	while (1) {
-		if (kbhit()) {
-			ip = getch();
+		if (_kbhit()) {
+			ip = _getch();
 			switch (ip) {
 			case LEFT:if (s != &board[0][0] && s != &board[1][0] && s != &board[2][0] && s != &board[3][0] && s != &board[4][0] && s != &board[5][0] && s != &board[6][0] && s != &board[7][0] && s != &board[8][0] && s != &board[9][0]) { s = s - 1; fff(s); }break;
 			case RIGHT:if (s != &board[0][9] && s != &board[1][9] && s != &board[2][9] && s != &board[3][9] && s != &board[4][9] && s != &board[5][9] && s != &board[6][9] && s != &board[7][9] && s != &board[8][9] && s != &board[9][9]) { s = s + 1; fff(s); }break;
@@ -119,9 +136,30 @@ void StartGame() {
 		}
 
 	}
+}
 
+int StartGame2() {
+	int x = 0, y = 0, x1 = 0, y1 = 0;
+	char ip = '\0';
 
+	while (1) {
+		if (_kbhit()) {
+			BackColor(' ');
+			DrawBoard(x1, y1);
 
+			BackColor('G');
+
+			ip = _getch();
+			switch (ip) {
+			case LEFT: x -= 1; DrawBoard(x, y); break;
+			case RIGHT:x += 1; DrawBoard(x, y); break;
+			case UP:; y -= 1; DrawBoard(x, y); break;
+			case DOWN: y += 1; DrawBoard(x, y); break;
+			case SPACE:; break;
+			}
+			x1 = x; y1 = y;
+		}
+	}
 }
 
 // 보드 배열 표시하기
@@ -271,7 +309,7 @@ int main() {
 	ConsoleInit();
 	DrawField();
 	CreateBoard();
-	StartGame();
+	StartGame2();
 
 	SetCursors(0, 0);
 }
