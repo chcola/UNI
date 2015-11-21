@@ -24,6 +24,9 @@
     <ClCompile Include="Project.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Project - 복사본.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="프로젝트.c">
