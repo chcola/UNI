@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include<string.h>
+#include <string.h>
 #include <time.h>
 #include <windows.h>
 #include <conio.h>
@@ -31,6 +31,7 @@ static int score = 0; //게임점수
 static int level = 1; //게임레벨
 static int speed = 500;
 int board[BOARD_HEIGHT + 3][BOARD_WIDTH + 4] = { 0, };
+int *s;
 
 
 // 키보드의 방향키와 스페이스에 대한 열거형 지정
@@ -41,7 +42,8 @@ enum ControlKeys
 	DOWN = 80,
 	LEFT = 75,
 	RIGHT = 77,
-	SPACE = 32
+	SPACE = 32,
+	ESC = 27
 };
 
 // 커서 숨기기 : true, T(보이기), false, F(숨기기)
@@ -52,16 +54,16 @@ void CursorVisible(bool blnCursorVisible)    // Console.CursorVisible = false;
 	cursorInfo.bVisible = blnCursorVisible;
 	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
 }
-void color(int n){
-	SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ),n);
+void color(int n) {
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), n);
 }
 
 // 현재 콘솔 내의 커서 위치를 설정
-void gotoxy(int x,int y,const char* s)
+void gotoxy(int x, int y, const char* s)
 {
-   COORD pos={2*x,y};
-   SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),pos);
-   printf("%s",s);
+	COORD pos = { 2 * x,y };
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+	printf("%s", s);
 
 
 }
@@ -74,38 +76,97 @@ void SetCursors(int cursorLeft, int cursorTop)    // Console.SetCursorPosition(p
 	COORD pos = { posX, posY };
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
+void DrawBoard(int i, int j);
+void fff(int *p) {
+	int x, y;
+	int *n;
+	n = &board[0][0];
+	x = ((p - n)) / 14;
+	y = ((p - n)) % 14;
+	if (x<10 && y<10) {
+		while (1) {
+
+			DrawBoard(y, x);
+			Sleep(100);
+			gotoxy(2 + BOARD_X + y * 2, 1 + BOARD_Y + x * 2, "  ");
+			Sleep(100);
+			if (kbhit())break;
+		}
+		DrawBoard(y, x);
+	}
+
+}
+void kkk(int *p) {
+	int x, y;
+	int *n;
+	n = &board[0][0];
+	x = ((p - n)) / 14;
+	y = ((p - n)) % 14;
+	if (x<10 && y<13) {
+		color(240);
+		switch (board[y][x]) {
+		case 5: {color(240);
+			gotoxy(2 + BOARD_X + y * 2, 1 + BOARD_Y + x * 2, "★");
+		}break;
+		case 1: {color(240);
+			gotoxy(2 + BOARD_X + y * 2, 1 + BOARD_Y + x * 2, "◆"); }break;
+		case 2: {color(240);
+			gotoxy(2 + BOARD_X + y * 2, 1 + BOARD_Y + x * 2, "♥"); }break;
+		case 3: {color(240);
+			gotoxy(2 + BOARD_X + y * 2, 1 + BOARD_Y + x * 2, "♣"); }break;
+		case 4: {color(240);
+			gotoxy(2 + BOARD_X + y * 2, 1 + BOARD_Y + x * 2, "♠"); }break;
+		} //else 종료
+
+	}
+}
 
 // 게임 시작..
 // 커서가 가리키는 위치의 유니코드 배경 색 바꾸기.
 // 0,0일때 8 + 2*x, +2* y +3 위치에 배경색 설정 후 printf("유니"); 스위치문 갖다 넣기
 void StartGame() {
-	int x;
+	int i, j;
+	char ip = '\0';
+	s = &board[0][0];
+	fff(s);
+	while (1) {
+		if (kbhit()) {
+			ip = getch();
+			switch (ip) {
+			case LEFT:if (s != &board[0][0] && s != &board[1][0] && s != &board[2][0] && s != &board[3][0] && s != &board[4][0] && s != &board[5][0] && s != &board[6][0] && s != &board[7][0] && s != &board[8][0] && s != &board[9][0]) { s = s - 1; fff(s); }break;
+			case RIGHT:if (s != &board[0][9] && s != &board[1][9] && s != &board[2][9] && s != &board[3][9] && s != &board[4][9] && s != &board[5][9] && s != &board[6][9] && s != &board[7][9] && s != &board[8][9] && s != &board[9][9]) { s = s + 1; fff(s); }break;
+			case UP:if (s != &board[0][0] && s != &board[0][1] && s != &board[0][2] && s != &board[0][3] && s != &board[0][4] && s != &board[0][5] && s != &board[0][6] && s != &board[0][7] && s != &board[0][8] && s != &board[0][9]) { s -= 14; fff(s); }break;
+			case DOWN:if (s != &board[9][0] && s != &board[9][1] && s != &board[9][2] && s != &board[9][3] && s != &board[9][4] && s != &board[9][5] && s != &board[9][6] && s != &board[9][7] && s != &board[9][8] && s != &board[9][9]) { s += 14; fff(s); }break;
+			case SPACE:if (*s>0)kkk(s); break;
+			case ESC:system("cls"); exit(1); break;
+			}
+
+		}
+
+	}
+
+
+
 }
 
 // 보드 배열 표시하기
-void DrawBoard(void) {
-		int i,j;
-	   int board[8][8];
-   srand(time(0));
-   for (i = 0; i < 8; i++) {
-	   for (j = 0; j < 8; j++) {
-		   board[i][j] = rand() % 5;
-		   switch (board[i][j]) {
-		   case 0: {color(14);
-			   gotoxy(2 + BOARD_X + i * 2, 2 + BOARD_Y + j * 2, "★"); }break;
-		   case 1: {
-			   color(11);
-			   gotoxy(2 + BOARD_X + i * 2, 2 + BOARD_Y + j * 2, "◆"); }break;
-		   case 2: {color(12);
-			   gotoxy(2 + BOARD_X + i * 2, 2 + BOARD_Y + j * 2, "♥"); }break;
-		   case 3: {color(10);
-			   gotoxy(2 + BOARD_X + i * 2, 2 + BOARD_Y + j * 2, "♣"); }break;
-		   case 4: {color(9);
-			   gotoxy(2 + BOARD_X + i * 2, 2 + BOARD_Y + j * 2, "♠"); }break;
-		   } //else 종료
-	   } // 안쪽 for 종료
-   } // 바깥 for 종료
-   SetCursors(7, 3);
+void DrawBoard(int i, int j) {
+
+	switch (board[i][j]) {
+	case 5: {color(14);
+		gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "★");
+	}break;
+	case 1: {color(11);
+		gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "◆"); }break;
+	case 2: {color(12);
+		gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "♥"); }break;
+	case 3: {color(10);
+		gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "♣"); }break;
+	case 4: {color(9);
+		gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "♠"); }break;
+	} //else 종료
+
+	SetCursors(7, 3);
 }
 
 
@@ -142,9 +203,13 @@ void CreateBoard(void)
 			//if (board_width == 0 || board_width == BOARD_WIDTH + 2 || board_height == 0) board[board_height][board_width] = 0;
 		}
 	}
-
+	int i, j;
 	//ConfirmBoard(); 보드에 맞출 수 있는것이 3개 이상인지 확인, 없으면 MakeBoard 실행
-	DrawBoard();
+	for (i = 0; i < BOARD_WIDTH; i++) {
+		for (j = 0; j < BOARD_HEIGHT; j++) {
+			DrawBoard(i, j);
+		}
+	}
 }
 
 
@@ -154,47 +219,47 @@ void DrawField(void)
 	int x, y;
 
 	//위 보드 라인
-	for (x = 1; x <= 2*BOARD_WIDTH + 1; x++)
+	for (x = 1; x <= 2 * BOARD_WIDTH + 1; x++)
 	{
-		board[2*BOARD_HEIGHT][x] = 1; //board 배열 중앙 1인식
-		gotoxy(BOARD_X+x, BOARD_Y,"─");  //콘솔좌표
-		
+		board[2 * BOARD_HEIGHT][x] = 1; //board 배열 중앙 1인식
+		gotoxy(BOARD_X + x, BOARD_Y, "─");  //콘솔좌표
+
 	}
 
 	//아래 보드 라인
 	for (x = 1; x <= 2 * BOARD_WIDTH + 1; x++)
 	{
 		board[2 * BOARD_HEIGHT][x] = 1; //board 배열 중앙 1인식
-		gotoxy((BOARD_X)+x, BOARD_Y + 2 * BOARD_HEIGHT,"─");  //콘솔좌표
-		
+		gotoxy((BOARD_X)+x, BOARD_Y + 2 * BOARD_HEIGHT, "─");  //콘솔좌표
+
 	}
 
 	//왼쪽 보드 라인
 	for (y = 0; y < 2 * BOARD_HEIGHT + 1; y++)
 	{
 		board[y][0] = 1; //board 배열 왼쪽 1인식
-		
+
 		if (y == 0)
-			gotoxy(BOARD_X, BOARD_Y + y,"┌");
+			gotoxy(BOARD_X, BOARD_Y + y, "┌");
 		else if (y == 2 * BOARD_HEIGHT)
-			gotoxy(BOARD_X, BOARD_Y + y,"└");
+			gotoxy(BOARD_X, BOARD_Y + y, "└");
 		else
-			gotoxy(BOARD_X, BOARD_Y + y,"│");
-			
+			gotoxy(BOARD_X, BOARD_Y + y, "│");
+
 	}
 	//오른쪽 보드 라인
 	for (y = 0; y < 2 * BOARD_HEIGHT + 1; y++)
 	{
 		board[y][2 * BOARD_WIDTH + 1] = 1; //board 배열 오른쪽 1인식
-		
+
 		if (y == 0)
-			gotoxy(BOARD_X + (2 * BOARD_WIDTH + 2) , BOARD_Y + y,"┐");
-			
+			gotoxy(BOARD_X + (2 * BOARD_WIDTH + 2), BOARD_Y + y, "┐");
+
 		else if (y == 2 * BOARD_HEIGHT)
-			gotoxy(BOARD_X + (2 * BOARD_WIDTH + 2) , BOARD_Y + y,"┘");
+			gotoxy(BOARD_X + (2 * BOARD_WIDTH + 2), BOARD_Y + y, "┘");
 		else
-			gotoxy(BOARD_X + (2 * BOARD_WIDTH + 2) , BOARD_Y + y,"│");
-		
+			gotoxy(BOARD_X + (2 * BOARD_WIDTH + 2), BOARD_Y + y, "│");
+
 	}
 
 	//모서리값 값 변경
@@ -210,17 +275,17 @@ void DrawField(void)
 void ConsoleInit()
 {
 	// 콘솔 초기화 및 시작 화면 구성 영역
-	gotoxy(0,0,"c언어 콘솔 테트리스");
-	gotoxy(0,1,"");
-	gotoxy(0,2,"=================================== ");
-	gotoxy(0,3,"조작법:");
-	gotoxy(0,4,"[→]     커서를 오른쪽으로 이동");
-	gotoxy(0,5,"[←]     커서를 왼쪽으로 이동");
-	gotoxy(0,6,"[↑]     커서를 왼쪽으로 이동");
-	gotoxy(0,7,"[↓]     커서를 아래로 이동");
-	gotoxy(0,8,"[Space]  커서가 가리키는 블럭 선택");
-	gotoxy(0,10,"아무키나 누르면 시작됩니다.");
-	gotoxy(0,11,"===================================");
+	gotoxy(0, 0, "c언어 콘솔 테트리스");
+	gotoxy(0, 1, "");
+	gotoxy(0, 2, "=================================== ");
+	gotoxy(0, 3, "조작법:");
+	gotoxy(0, 4, "[→]     커서를 오른쪽으로 이동");
+	gotoxy(0, 5, "[←]     커서를 왼쪽으로 이동");
+	gotoxy(0, 6, "[↑]     커서를 왼쪽으로 이동");
+	gotoxy(0, 7, "[↓]     커서를 아래로 이동");
+	gotoxy(0, 8, "[Space]  커서가 가리키는 블럭 선택");
+	gotoxy(0, 10, "아무키나 누르면 시작됩니다.");
+	gotoxy(0, 11, "===================================");
 
 	_getch();
 	system("cls");            // Console.Clear();
@@ -231,7 +296,7 @@ int main() {
 	ConsoleInit();
 	DrawField();
 	CreateBoard();
-     
-	
+	StartGame();
+
 	SetCursors(0, 0);
 }

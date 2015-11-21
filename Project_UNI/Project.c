@@ -32,7 +32,7 @@ static int level = 1; //게임레벨
 static int speed = 500;
 int board[BOARD_HEIGHT + 3][BOARD_WIDTH + 4] = { 0, };
 int *s;
-int Bcolor = 00;
+int Bcolor = 0;
 
 // 키보드의 방향키와 스페이스에 대한 열거형 지정
 // _getch()가 반환하는 값이
@@ -42,7 +42,8 @@ enum ControlKeys
 	DOWN = 80,
 	LEFT = 75,
 	RIGHT = 77,
-	SPACE = 32
+	SPACE = 32,
+	ESC = 27
 };
 
 // 커서 숨기기 : true, T(보이기), false, F(숨기기)
@@ -65,7 +66,7 @@ void BackColor(char t) {
 	case 'R': Bcolor = 64; break;
 	case 'P': Bcolor = 80; break;
 	case 'Y': Bcolor = 96; break;
-	case 'W': Bcolor = 128; break;
+	case 'W': Bcolor = 240; break;
 	default: Bcolor = 0; break;
 	}
 }
@@ -112,7 +113,30 @@ void fff(int *p) {
 	}
 
 }
+void kkk(int *p) {
+	int x, y;
+	int *n;
+	n = &board[0][0];
+	x = ((p - n)) / 14;
+	y = ((p - n)) % 14;
+	if (x<10 && y<13) {
+		color(240);
+		switch (board[y][x]) {
+		case 5: {color(240);
+			gotoxy(2 + BOARD_X + y * 2, 1 + BOARD_Y + x * 2, "★");
+		}break;
+		case 1: {color(240);
+			gotoxy(2 + BOARD_X + y * 2, 1 + BOARD_Y + x * 2, "◆"); }break;
+		case 2: {color(240);
+			gotoxy(2 + BOARD_X + y * 2, 1 + BOARD_Y + x * 2, "♥"); }break;
+		case 3: {color(240);
+			gotoxy(2 + BOARD_X + y * 2, 1 + BOARD_Y + x * 2, "♣"); }break;
+		case 4: {color(240);
+			gotoxy(2 + BOARD_X + y * 2, 1 + BOARD_Y + x * 2, "♠"); }break;
+		} //else 종료
 
+	}
+}
 
 // 게임 시작..
 // 커서가 가리키는 위치의 유니코드 배경 색 바꾸기.
@@ -130,7 +154,8 @@ void StartGame() {
 			case RIGHT:if (s != &board[0][9] && s != &board[1][9] && s != &board[2][9] && s != &board[3][9] && s != &board[4][9] && s != &board[5][9] && s != &board[6][9] && s != &board[7][9] && s != &board[8][9] && s != &board[9][9]) { s = s + 1; fff(s); }break;
 			case UP:if (s != &board[0][0] && s != &board[0][1] && s != &board[0][2] && s != &board[0][3] && s != &board[0][4] && s != &board[0][5] && s != &board[0][6] && s != &board[0][7] && s != &board[0][8] && s != &board[0][9]) { s -= 14; fff(s); }break;
 			case DOWN:if (s != &board[9][0] && s != &board[9][1] && s != &board[9][2] && s != &board[9][3] && s != &board[9][4] && s != &board[9][5] && s != &board[9][6] && s != &board[9][7] && s != &board[9][8] && s != &board[9][9]) { s += 14; fff(s); }break;
-			case SPACE:; break;
+			case SPACE:if (*s>0)kkk(s); break;
+			case ESC:system("cls"); exit(1); break;
 			}
 
 		}
@@ -139,25 +164,40 @@ void StartGame() {
 }
 
 int StartGame2() {
-	int x = 0, y = 0, x1 = 0, y1 = 0;
+	int x = 0, y = 0, x1 = 0, y1 = 0, x2 = 0, y2 = 0, sel = F, count = 0;
 	char ip = '\0';
 
 	while (1) {
 		if (_kbhit()) {
-			BackColor(' ');
-			DrawBoard(x1, y1);
-
+			if (sel != T) {
+				BackColor(' ');
+				DrawBoard(x1, y1);
+			}
+			
 			BackColor('G');
 
 			ip = _getch();
+
 			switch (ip) {
-			case LEFT: x -= 1; DrawBoard(x, y); break;
-			case RIGHT:x += 1; DrawBoard(x, y); break;
-			case UP:; y -= 1; DrawBoard(x, y); break;
-			case DOWN: y += 1; DrawBoard(x, y); break;
-			case SPACE:; break;
+			case LEFT:if (x > 0) x -= 1; DrawBoard(x, y); break;
+			case RIGHT: sel = F; if (x < BOARD_WIDTH - 1) x += 1; DrawBoard(x, y); break;
+			case UP:; sel = F; if (y > 0) y -= 1; DrawBoard(x, y); break;
+			case DOWN: sel = F; if (y < BOARD_HEIGHT - 1) y += 1; DrawBoard(x, y); break;
+			case SPACE: sel = F; BackColor('W'); DrawBoard(x, y); sel = T; count++;
+				if (count >= 2) {
+					BackColor(' ');
+					Sleep(300);
+					DrawBoard(x1, y1);
+					DrawBoard(x2, y2);
+					count = 0;
+				} break;// if (*s > 0)kkk(s); break;
+			case ESC: sel = F; system("cls"); exit(1); break;
 			}
-			x1 = x; y1 = y;
+
+			x2 = x1; y2 = y1; x1 = x; y1 = y;
+
+			SetCursors(0, 0);
+			printf("%d  %d\n%d  %d %d", x1, y1, x2, y2, count);
 		}
 	}
 }
