@@ -26,7 +26,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="by 한나.txt">
+    <Text Include="프로젝트.c">
       <Filter>소스 파일</Filter>
     </Text>
   </ItemGroup>

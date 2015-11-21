@@ -30,7 +30,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="by 한나.txt" />
+    <Text Include="프로젝트.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </Text>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{659C2E2F-F17C-44D5-850C-C6C7AE6A88E7}</ProjectGuid>

@@ -52,16 +52,16 @@ void CursorVisible(bool blnCursorVisible)    // Console.CursorVisible = false;
 	cursorInfo.bVisible = blnCursorVisible;
 	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
 }
-void color(int n) {
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), n);
+void color(int n){
+	SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ),n);
 }
 
 // 현재 콘솔 내의 커서 위치를 설정
-void gotoxy(int x, int y, const char* s)
+void gotoxy(int x,int y,const char* s)
 {
-	COORD pos = { 2 * x,y };
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
-	printf("%s", s);
+   COORD pos={2*x,y};
+   SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),pos);
+   printf("%s",s);
 
 
 }
@@ -84,28 +84,28 @@ void StartGame() {
 
 // 보드 배열 표시하기
 void DrawBoard(void) {
-	int i, j;
-	int board[8][8];
-	srand(time(0));
-	for (i = 0; i < 8; i++) {
-		for (j = 0; j < 8; j++) {
-			board[i][j] = rand() % 5;
-			switch (board[i][j]) {
-			case 0: {color(14);
-				gotoxy(2 + BOARD_X + i * 2, 2 + BOARD_Y + j * 2, "★"); }break;
-			case 1: {
-				color(11);
-				gotoxy(2 + BOARD_X + i * 2, 2 + BOARD_Y + j * 2, "◆"); }break;
-			case 2: {color(12);
-				gotoxy(2 + BOARD_X + i * 2, 2 + BOARD_Y + j * 2, "♥"); }break;
-			case 3: {color(10);
-				gotoxy(2 + BOARD_X + i * 2, 2 + BOARD_Y + j * 2, "♣"); }break;
-			case 4: {color(9);
-				gotoxy(2 + BOARD_X + i * 2, 2 + BOARD_Y + j * 2, "♠"); }break;
-			} //else 종료
-		} // 안쪽 for 종료
-	} // 바깥 for 종료
-	SetCursors(7, 3);
+		int i,j;
+	   int board[8][8];
+   srand(time(0));
+   for (i = 0; i < 8; i++) {
+	   for (j = 0; j < 8; j++) {
+		   board[i][j] = rand() % 5;
+		   switch (board[i][j]) {
+		   case 0: {color(14);
+			   gotoxy(2 + BOARD_X + i * 2, 2 + BOARD_Y + j * 2, "★"); }break;
+		   case 1: {
+			   color(11);
+			   gotoxy(2 + BOARD_X + i * 2, 2 + BOARD_Y + j * 2, "◆"); }break;
+		   case 2: {color(12);
+			   gotoxy(2 + BOARD_X + i * 2, 2 + BOARD_Y + j * 2, "♥"); }break;
+		   case 3: {color(10);
+			   gotoxy(2 + BOARD_X + i * 2, 2 + BOARD_Y + j * 2, "♣"); }break;
+		   case 4: {color(9);
+			   gotoxy(2 + BOARD_X + i * 2, 2 + BOARD_Y + j * 2, "♠"); }break;
+		   } //else 종료
+	   } // 안쪽 for 종료
+   } // 바깥 for 종료
+   SetCursors(7, 3);
 }
 
 
@@ -154,47 +154,47 @@ void DrawField(void)
 	int x, y;
 
 	//위 보드 라인
-	for (x = 1; x <= 2 * BOARD_WIDTH + 1; x++)
+	for (x = 1; x <= 2*BOARD_WIDTH + 1; x++)
 	{
-		board[2 * BOARD_HEIGHT][x] = 1; //board 배열 중앙 1인식
-		gotoxy(BOARD_X + x, BOARD_Y, "─");  //콘솔좌표
-
+		board[2*BOARD_HEIGHT][x] = 1; //board 배열 중앙 1인식
+		gotoxy(BOARD_X+x, BOARD_Y,"─");  //콘솔좌표
+		
 	}
 
 	//아래 보드 라인
 	for (x = 1; x <= 2 * BOARD_WIDTH + 1; x++)
 	{
 		board[2 * BOARD_HEIGHT][x] = 1; //board 배열 중앙 1인식
-		gotoxy((BOARD_X)+x, BOARD_Y + 2 * BOARD_HEIGHT, "─");  //콘솔좌표
-
+		gotoxy((BOARD_X)+x, BOARD_Y + 2 * BOARD_HEIGHT,"─");  //콘솔좌표
+		
 	}
 
 	//왼쪽 보드 라인
 	for (y = 0; y < 2 * BOARD_HEIGHT + 1; y++)
 	{
 		board[y][0] = 1; //board 배열 왼쪽 1인식
-
+		
 		if (y == 0)
-			gotoxy(BOARD_X, BOARD_Y + y, "┌");
+			gotoxy(BOARD_X, BOARD_Y + y,"┌");
 		else if (y == 2 * BOARD_HEIGHT)
-			gotoxy(BOARD_X, BOARD_Y + y, "└");
+			gotoxy(BOARD_X, BOARD_Y + y,"└");
 		else
-			gotoxy(BOARD_X, BOARD_Y + y, "│");
-
+			gotoxy(BOARD_X, BOARD_Y + y,"│");
+			
 	}
 	//오른쪽 보드 라인
 	for (y = 0; y < 2 * BOARD_HEIGHT + 1; y++)
 	{
 		board[y][2 * BOARD_WIDTH + 1] = 1; //board 배열 오른쪽 1인식
-
+		
 		if (y == 0)
-			gotoxy(BOARD_X + (2 * BOARD_WIDTH + 2), BOARD_Y + y, "┐");
-
+			gotoxy(BOARD_X + (2 * BOARD_WIDTH + 2) , BOARD_Y + y,"┐");
+			
 		else if (y == 2 * BOARD_HEIGHT)
-			gotoxy(BOARD_X + (2 * BOARD_WIDTH + 2), BOARD_Y + y, "┘");
+			gotoxy(BOARD_X + (2 * BOARD_WIDTH + 2) , BOARD_Y + y,"┘");
 		else
-			gotoxy(BOARD_X + (2 * BOARD_WIDTH + 2), BOARD_Y + y, "│");
-
+			gotoxy(BOARD_X + (2 * BOARD_WIDTH + 2) , BOARD_Y + y,"│");
+		
 	}
 
 	//모서리값 값 변경
@@ -210,17 +210,17 @@ void DrawField(void)
 void ConsoleInit()
 {
 	// 콘솔 초기화 및 시작 화면 구성 영역
-	gotoxy(0, 0, "c언어 콘솔 테트리스");
-	gotoxy(0, 1, "");
-	gotoxy(0, 2, "=================================== ");
-	gotoxy(0, 3, "조작법:");
-	gotoxy(0, 4, "[→]     커서를 오른쪽으로 이동");
-	gotoxy(0, 5, "[←]     커서를 왼쪽으로 이동");
-	gotoxy(0, 6, "[↑]     커서를 왼쪽으로 이동");
-	gotoxy(0, 7, "[↓]     커서를 아래로 이동");
-	gotoxy(0, 8, "[Space]  커서가 가리키는 블럭 선택");
-	gotoxy(0, 10, "아무키나 누르면 시작됩니다.");
-	gotoxy(0, 11, "===================================");
+	gotoxy(0,0,"c언어 콘솔 테트리스");
+	gotoxy(0,1,"");
+	gotoxy(0,2,"=================================== ");
+	gotoxy(0,3,"조작법:");
+	gotoxy(0,4,"[→]     커서를 오른쪽으로 이동");
+	gotoxy(0,5,"[←]     커서를 왼쪽으로 이동");
+	gotoxy(0,6,"[↑]     커서를 왼쪽으로 이동");
+	gotoxy(0,7,"[↓]     커서를 아래로 이동");
+	gotoxy(0,8,"[Space]  커서가 가리키는 블럭 선택");
+	gotoxy(0,10,"아무키나 누르면 시작됩니다.");
+	gotoxy(0,11,"===================================");
 
 	_getch();
 	system("cls");            // Console.Clear();
@@ -231,7 +231,7 @@ int main() {
 	ConsoleInit();
 	DrawField();
 	CreateBoard();
-
-
+     
+	
 	SetCursors(0, 0);
 }
