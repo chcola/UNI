@@ -24,13 +24,14 @@
     <ClCompile Include="Project.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Project - 복사본.c">
+    <ClCompile Include="multithread.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="프로젝트.c">
+    <ClCompile Include="프로젝트.c">
       <Filter>소스 파일</Filter>
-    </Text>
+    </ClCompile>
+    <ClCompile Include="소스.TXT">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
