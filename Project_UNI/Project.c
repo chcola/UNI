@@ -34,10 +34,11 @@
 static int score = 0; //게임점수
 static int level = 1; //게임레벨
 static int speed = 500;
-int board[BOARD_HEIGHT + 3][BOARD_WIDTH + 4] = { 0, };
+int board[BOARD_HEIGHT][BOARD_WIDTH] = { 0, };
 int *s;
 int Bcolor = 0;
 int RANDOM = 5;
+
 
 // 키보드의 방향키와 스페이스에 대한 열거형 지정
 // _getch()가 반환하는 값이
@@ -52,6 +53,7 @@ enum ControlKeys
 	ESC = 27
 };
 
+
 // 커서 숨기기 : true, T(보이기), false, F(숨기기)
 // 인터넷 참고
 void CursorVisible(bool blnCursorVisible)    // Console.CursorVisible = false;
@@ -62,11 +64,11 @@ void CursorVisible(bool blnCursorVisible)    // Console.CursorVisible = false;
 	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
 }
 
+
 // 글자 색 변경 함수.
 void color(int n) {
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), Bcolor + n);
 }
-
 // 백그라운드 색을 지정하는 함수.
 // 이 후에 color 함수를 사용해야 적용된다.
 void BackColor(char t) {
@@ -84,6 +86,7 @@ void BackColor(char t) {
 	}
 }
 
+
 // 현재 콘솔 내의 커서 위치를 설정.
 void SetCursors(int cursorLeft, int cursorTop)    // Console.SetCursorPosition(posX, posY);
 {
@@ -93,6 +96,7 @@ void SetCursors(int cursorLeft, int cursorTop)    // Console.SetCursorPosition(p
 	COORD pos = { posX, posY };
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
+
 
 // 현재 콘솔 내의 커서 위치를 설정한 후 출력한다
 // 인터넷 참고
@@ -193,25 +197,25 @@ int Bomb(int x, int y, int O) {
 	int bomb[BOARD_WIDTH][BOARD_HEIGHT] = { 0, };
 	int a, b, count = 0;
 
+
 	Bomb_Width(x, y, bomb);
 	Bomb_Height(x, y, bomb);
 
 	for (b = 0; b < BOARD_HEIGHT; b++) {
 		for (a = 0; a < BOARD_WIDTH; a++) {
 			if (bomb[a][b] == 1) {
-				if (O == 1)board[a][b] = 0;
+				if (O == 1)	board[a][b] = 0;
 				count++;
 			}
 		}
 	}
 
-	if (count >= 3) {
+	if (count >= 3 && O == 1) {
 		printf("\a");
 		BackColor(' ');
 		DrawBoard(x, y);
 		score += (count)* 10;
 	}
-
 	return count;
 }
 
@@ -221,6 +225,7 @@ void drop() {
 	int i, j, A;
 	srand(time(0));
 	int Q;
+
 	while (1) {
 		Q = 0;
 		for (i = 0; i<8; i++) {
@@ -229,10 +234,11 @@ void drop() {
 				{
 					board[i][j] = board[i][j - 1];
 					DrawBoard(i, j);
+					Sleep(75);
 					board[i][j - 1] = 0;
 					if (j - 1 >= 0)
 						DrawBoard(i, j - 1);
-					Sleep(100);
+					Sleep(75);
 				}
 
 			}
@@ -254,10 +260,10 @@ void drop() {
 					Q++;
 				}
 			}
-
 		}
 		if (Q == 64)break;
 	}
+
 	BackColor(' ');
 	color(15);
 	SetCursors(50, 10);
@@ -277,11 +283,8 @@ void swap(int *a, int*b, int x, int y, int x2, int y2) {
 	DrawBoard(x, y);
 	DrawBoard(x2, y2);
 
-
-
 	X = Bomb(x, y, 1);
 	Y = Bomb(x2, y2, 1);
-
 
 	if (X + Y == 0) {
 		BackColor('I');
@@ -313,21 +316,66 @@ void swap(int *a, int*b, int x, int y, int x2, int y2) {
 					B += A;
 				}
 			}
+			if (B == 0) break;
+		}
+	}
+}
 
-			if (B == 0)break;
+// 맞출 수 있는 것이 3개 이상인지 확인. 없으면 MakeBoard() 재실행
+// 바꾸지 않고 3개가 겹치면 터트리기 먼저.(터지는 것 구현 해도, 표시되면 안되니 따로 만들것.)
+// 오른쪽이랑 바꾸고(바꾸는 함수 구현하여 사용), 오른쪽, 아래랑 3개 되는지 확인.
+// 아래와 바꾸고 반복.
+// 미완!
+void CreateBoard();
+void ConfirmBoard() {
+	int i, j, n = 0;
+	int tmp;
+	char ip = '\0';
+	for (i = 0; i<BOARD_HEIGHT; i++) {
+		for (j = 0; j<BOARD_WIDTH; j++) {
+			tmp = board[j][i];
+			board[j][i] = board[j][i + 1];
+			board[j][i + 1] = tmp;
+			n += Bomb(i, j, 0);
+			tmp = board[j][i];
+			board[j][i] = board[j][i + 1];
+			board[j][i + 1] = tmp;
 		}
 	}
 
 
+	for (i = 0; i<BOARD_HEIGHT; i++) {
+		for (j = 0; j<BOARD_WIDTH; j++) {
+			tmp = board[j][i];
+			board[j][i] = board[j + 1][i];
+			board[j + 1][i] = tmp;
+			n += Bomb(i, j, 0);
+			tmp = board[j][i];
+			board[j][i] = board[j + 1][i];
+			board[j + 1][i] = tmp;
 
+		}
+	}
+
+	if (n<3) {
+		printf("더 이상 게임진행이 어렵습니다.\n");
+		printf("게임을 계속하려면 space,그만둘려면 esc를 눌러주세요.\n");
+		ip = _getch();
+		if (ip == SPACE) {
+			CreateBoard();
+			StartGame();
+		}
+		if (ip == ESC) exit(1);
+	}
 }
-void ConfirmBoard();
+
 
 // 게임 시작.
 // 커서가 가리키는 위치의 유니코드 배경 색 바꾸기.
 // 0,0일때 8 + 2*x, +2* y +3 위치에 배경색 설정 후 printf("유니"); 스위치문 갖다 넣기
 int StartGame() {
 
+	ConfirmBoard();
 
 	BackColor(' ');
 	color(15);
@@ -341,6 +389,7 @@ int StartGame() {
 			for (j = 0; j<8; j++) {
 				Sleep(50);
 				A = Bomb(i, j, 1);
+
 				drop();
 				B += A;
 
@@ -349,7 +398,7 @@ int StartGame() {
 		if (B == 0)break;
 	}
 
-	ConfirmBoard();
+
 	int x = 0, y = 0, x1 = 0, y1 = 0, x2 = -1, y2 = -1, sel = F, count = 0;
 	char ip = '\0';
 
@@ -382,6 +431,7 @@ int StartGame() {
 						   BackColor(' ');
 						   if ((x1 == x2 + 1 && y1 == y2) || (x1 == x2&&y1 == y2 + 1) || (x1 == x2 - 1 && y1 == y2) || (x1 == x2&&y1 == y2 - 1)) {
 							   swap(&board[x][y], &board[x2][y2], x, y, x2, y2);
+							   ConfirmBoard();
 						   }
 
 						   BackColor(' ');
@@ -396,12 +446,6 @@ int StartGame() {
 
 			x1 = x; y1 = y;
 
-			/*
-			BackColor(' ');
-			color(15);
-			SetCursors(50, 10);
-			printf("score:%d", score);
-			*/
 			sel = F;
 			SetCursors(0, 0);
 			if (TEST == T) printf("%d  %d\n%d  %d %d \n %d", x1, y1, x2, y2, count, sel);
@@ -410,44 +454,6 @@ int StartGame() {
 	}
 }
 
-
-// 맞출 수 있는 것이 3개 이상인지 확인. 없으면 MakeBoard() 재실행
-// 바꾸지 않고 3개가 겹치면 터트리기 먼저.(터지는 것 구현 해도, 표시되면 안되니 따로 만들것.)
-// 오른쪽이랑 바꾸고(바꾸는 함수 구현하여 사용), 오른쪽, 아래랑 3개 되는지 확인.
-// 아래와 바꾸고 반복.
-// 미완!
-void CreateBoard();
-void ConfirmBoard() {
-	int i, j, n = 0;
-	int tmp;
-	for (i = 0; i<BOARD_HEIGHT; i++) {
-		for (j = 0; j<BOARD_WIDTH; j++) {
-			tmp = board[j][i];
-			board[j][i] = board[j][i + 1];
-			board[j][i + 1] = tmp;
-			n += Bomb(i, j, 0);
-			tmp = board[j][i];
-			board[j][i] = board[j][i + 1];
-			board[j][i + 1] = tmp;
-
-		}
-	}
-	for (i = 0; i<BOARD_HEIGHT; i++) {
-		for (j = 0; j<BOARD_WIDTH; j++) {
-			tmp = board[j][i];
-			board[j][i] = board[j + 1][i];
-			board[j + 1][i] = tmp;
-			n += Bomb(i, j, 0);
-			tmp = board[j][i];
-			board[j][i] = board[j + 1][i];
-			board[j + 1][i] = tmp;
-
-		}
-	}
-	if (n == 0) {
-		printf("더 이상 게임진행이 어렵습니다.\n");
-	}
-}
 
 // 보드 배열 만들기(main3).
 void CreateBoard(void)
@@ -463,6 +469,7 @@ void CreateBoard(void)
 		}
 	}
 
+	/*
 	board[0][0] = 1;
 	board[0][1] = 1;
 	board[0][2] = 2;
@@ -527,41 +534,16 @@ void CreateBoard(void)
 	board[7][5] = 4;
 	board[7][6] = 5;
 	board[7][7] = 5;
+	*/
 
-	//ConfirmBoard(); 보드에 맞출 수 있는것이 3개 이상인지 확인, 없으면 MakeBoard 실행
 	int i, j;
+	ConfirmBoard(); //보드에 맞출 수 있는것이 3개 이상인지 확인, 없으면 MakeBoard 실행
 	for (i = 0; i < BOARD_WIDTH; i++) {
 		for (j = 0; j < BOARD_HEIGHT; j++) {
 			DrawBoard(i, j);
 		}
 	}
 }
-
-
-
-/*
-// 보드 배열 만들기(main3).
-void CreateBoard(void)
-{
-	srand(time(0));
-
-	int board_width, board_height;
-	for (board_height = 0; board_height < BOARD_HEIGHT; board_height++) {
-		for (board_width = 0; board_width <= BOARD_WIDTH; board_width++) {
-			board[board_height][board_width] = rand() % RANDOM + 1;
-			// 배열의 마지막을 비워야 한다면
-			//if (board_width == 0 || board_width == BOARD_WIDTH + 2 || board_height == 0) board[board_height][board_width] = 0;
-		}
-	}
-	int i, j;
-	//ConfirmBoard(); 보드에 맞출 수 있는것이 3개 이상인지 확인, 없으면 MakeBoard 실행
-	for (i = 0; i < BOARD_WIDTH; i++) {
-		for (j = 0; j < BOARD_HEIGHT; j++) {
-			DrawBoard(i, j);
-		}
-	}
-}
-*/
 
 
 // 게임판 그리기(main2).
@@ -588,7 +570,7 @@ void DrawField(void)
 	//왼쪽 보드 라인
 	for (y = 0; y < 2 * BOARD_HEIGHT + 1; y++)
 	{
-		//board[y][0] = 1; //board 배열 왼쪽 1인식
+		board[y][0] = 1; //board 배열 왼쪽 1인식
 
 		if (y == 0)
 			gotoxy(BOARD_X, BOARD_Y + y, "┌");
@@ -601,7 +583,7 @@ void DrawField(void)
 	//오른쪽 보드 라인
 	for (y = 0; y < 2 * BOARD_HEIGHT + 1; y++)
 	{
-		//board[y][2 * BOARD_WIDTH + 1] = 1; //board 배열 오른쪽 1인식
+		board[y][2 * BOARD_WIDTH + 1] = 1; //board 배열 오른쪽 1인식
 
 		if (y == 0)
 			gotoxy(BOARD_X + (2 * BOARD_WIDTH + 2), BOARD_Y + y, "┐");
@@ -610,6 +592,7 @@ void DrawField(void)
 			gotoxy(BOARD_X + (2 * BOARD_WIDTH + 2), BOARD_Y + y, "┘");
 		else
 			gotoxy(BOARD_X + (2 * BOARD_WIDTH + 2), BOARD_Y + y, "│");
+
 	}
 
 	//모서리값 값 변경

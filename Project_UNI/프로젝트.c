@@ -34,7 +34,7 @@
 static int score = 0; //게임점수
 static int level = 1; //게임레벨
 static int speed = 500;
-int board[BOARD_HEIGHT][BOARD_WIDTH] = { 0, };
+int board[BOARD_WIDTH + 2][BOARD_HEIGHT + 2] = { 0, };
 int *s;
 int Bcolor = 0;
 int RANDOM = 5;
@@ -111,7 +111,7 @@ void gotoxy(int x, int y, const char* s)
 // 보드 배열 표시하기
 // by 한나
 void DrawBoard(int i, int j) {
-	if (i >= 0 && i<8 && j >= 0 && j<8) {
+	if (i >= 0 && i < BOARD_WIDTH&& j >= 0 && j < BOARD_HEIGHT) {
 		switch (board[i][j]) {
 		case 5: {color(14);
 			gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "★");
@@ -228,24 +228,25 @@ void drop() {
 
 	while (1) {
 		Q = 0;
-		for (i = 0; i<8; i++) {
-			for (j = 0; j<8; j++) {
+		for (i = 0; i < BOARD_WIDTH; i++) {
+			for (j = 0; j < BOARD_HEIGHT; j++) {
 				if (board[i][j] == 0)
 				{
-					board[i][j] = board[i][j - 1];
-					DrawBoard(i, j);
-					Sleep(75);
-					board[i][j - 1] = 0;
-					if (j - 1 >= 0)
-						DrawBoard(i, j - 1);
-					Sleep(75);
-				}
+					if (j - 1 >= 0) {
+						board[i][j] = board[i][j - 1];
+						DrawBoard(i, j);
 
+						if( TEST == T) Sleep(75);	// 시험중
+						board[i][j - 1] = 0;
+						DrawBoard(i, j - 1);
+						Sleep(75);
+					}
+				}
 			}
 		}
 
-		for (i = 0; i<8; i++) {
-			for (j = 0; j<8; j++) {
+		for (i = 0; i < BOARD_WIDTH; i++) {
+			for (j = 0; j < BOARD_HEIGHT; j++) {
 				if (board[i][0] == 0) {
 					board[i][j] = rand() % RANDOM + 1;
 					DrawBoard(i, j);
@@ -254,8 +255,8 @@ void drop() {
 			}
 		}
 
-		for (i = 0; i<8; i++) {
-			for (j = 0; j<8; j++) {
+		for (i = 0; i < BOARD_WIDTH; i++) {
+			for (j = 0; j < BOARD_HEIGHT; j++) {
 				if (board[i][j] != 0) {
 					Q++;
 				}
@@ -308,8 +309,8 @@ void swap(int *a, int*b, int x, int y, int x2, int y2) {
 
 		while (1) {
 			B = 0;
-			for (i = 0; i < 8; i++) {
-				for (j = 0; j < 8; j++) {
+			for (i = 0; i < BOARD_WIDTH; i++) {
+				for (j = 0; j < BOARD_HEIGHT; j++) {
 					Sleep(10);
 					A = Bomb(i, j, 1);
 					drop();
@@ -358,10 +359,16 @@ void ConfirmBoard() {
 	}
 
 	if (n<3) {
-		printf("더 이상 게임진행이 어렵습니다.\n");
-		printf("게임을 계속하려면 space,그만둘려면 esc를 눌러주세요.\n");
+		SetCursors(5, 20);
+		printf("더 이상 게임진행이 어렵습니다.");
+		SetCursors(5, 21);
+		printf("게임을 계속하려면 space,그만둘려면 esc를 눌러주세요.");
 		ip = _getch();
 		if (ip == SPACE) {
+			SetCursors(5, 20);
+			printf("                                                   ");
+			SetCursors(5, 21);
+			printf("                                                      \n");
 			CreateBoard();
 			StartGame();
 		}
@@ -385,8 +392,8 @@ int StartGame() {
 	int i, j, A, B;
 	while (1) {
 		B = 0;
-		for (i = 0; i<8; i++) {
-			for (j = 0; j<8; j++) {
+		for (i = 0; i < BOARD_WIDTH; i++) {
+			for (j = 0; j < BOARD_HEIGHT; j++) {
 				Sleep(50);
 				A = Bomb(i, j, 1);
 
