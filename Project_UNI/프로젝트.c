@@ -22,7 +22,9 @@
 #define F 0
 #define bool int
 
+
 #define TEST T //시험중
+
 
 #define BOARD_WIDTH 8        // 게임 영역의 가로(열) : ━
 #define BOARD_HEIGHT 8        // 게임 영역의 세로(행) : ┃
@@ -34,14 +36,20 @@
 static int score = 0; //게임점수
 static int level = 1; //게임레벨
 static int speed = 500;
+
 static clock_t start, end;
 static long timer = 0;
 static long t_limit = 15;
 static int s_limit = 3000;
+
+static clock_t fevt;
+int fev_lev = 1;
+
 int board[BOARD_WIDTH + 2][BOARD_HEIGHT + 2] = { 0, };
 int *s;
 int Bcolor = 0;
 int RANDOM = 5;
+int work = 0;
 
 
 // 키보드의 방향키와 스페이스에 대한 열거형 지정
@@ -73,6 +81,7 @@ void CursorVisible(bool blnCursorVisible)    // Console.CursorVisible = false;
 void color(int n) {
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), Bcolor + n);
 }
+
 // 백그라운드 색을 지정하는 함수.
 // 이 후에 color 함수를 사용해야 적용된다.
 void BackColor(char t) {
@@ -136,6 +145,16 @@ void DrawBoard(int i, int j) {
 		} //else 종료
 	}
 	SetCursors(7, 3);
+}
+
+
+void fever(int count) {
+	if (count == 0) fev_lev = 1;
+	else if(count > 3){
+		fev_lev += (count - 3);
+		if (TEST == T) { SetCursors(50, 13); printf("fev = %2d", fev_lev); }
+		fevt = clock();
+	}
 }
 
 
@@ -208,19 +227,20 @@ int Bomb(int x, int y, int O) {
 	int bomb[BOARD_WIDTH][BOARD_HEIGHT] = { 0, };
 	int a, b, count = 0;
 
-
 	Bomb_Width(x, y, bomb);
 	Bomb_Height(x, y, bomb);
-	//bomb를 확인하기위해  bomb출력 나중에 삭제 
-	SetCursors(0, 25);
-	for (a = 0; a<8; a++) {
-		for (b = 0; b<8; b++) {
-			printf("%d ", bomb[b][a]);
+
+	//bomb를 확인하기위해  bomb출력 나중에 삭제
+	if (TEST == T) {
+		SetCursors(0, 23);
+		for (a = 0; a < 8; a++) {
+			for (b = 0; b < 8; b++) {
+				printf("%d ", bomb[b][a]);
+			}
+			printf("\n");
 		}
-		printf("\n");
 	}
 
-	count = 0;
 	for (b = 0; b < BOARD_HEIGHT; b++) {
 		for (a = 0; a < BOARD_WIDTH; a++) {
 			if (bomb[a][b] == 1) {
@@ -229,15 +249,18 @@ int Bomb(int x, int y, int O) {
 			}
 		}
 	}
-	SetCursors(20, 25);
-	printf("%d", count);
+
+	if (TEST == T) { SetCursors(20, 25); printf("%d", count); }
+
 	if (count >= 3) {
 		printf("\a");
 		BackColor(' ');
 		//DrawBoard(x, y);
-		score += (count)* 10;
+		if (O == 1) score += (count) * 10 * fev_lev;
+		if(work == 1) fever(count);
 		return count;
 	}
+
 	return 0;
 }
 
@@ -291,12 +314,13 @@ void drop() {
 	color(15);
 	SetCursors(50, 10);
 	printf("score:%5d", score);
-	if (score>s_limit&&timer <= t_limit) {
+	if (score > s_limit && timer <= t_limit) {
 		level++;
-		if (level % 2 == 0)t_limit = 10;
-		if (level % 2 == 1)RANDOM++;
+		if (level % 2 == 0) t_limit -= 3;
+		if (level % 2 == 1) RANDOM++;
 		score = 0;
 	}
+
 	else if ((end - start)>500);
 	start = clock();
 }
@@ -334,27 +358,25 @@ void swap(int *a, int*b, int x, int y, int x2, int y2) {
 		DrawBoard(x2, y2);
 	}
 	else {
+		/*
 		end = clock();
 		timer = -((start - end) / CLOCKS_PER_SEC);
 		BackColor(' ');
 		color(15);
+
 		SetCursors(50, 9);
 		printf("              ");
 		SetCursors(50, 9);
 		printf("Time: %02d", timer);
-		if (timer>t_limit) {
-			BackColor(' ');
-			color(15);
-			SetCursors(50, 7);
-			printf("Game Over");
-			Sleep(2000);
-			system("cls");
-			exit(1);
-		}
+		
+		SetCursors(56, 9);
+		printf("%02d", timer);
+		*/
 
 		//Sleep(800);
-		drop();
 
+
+		drop();
 
 		while (1) {
 			B = 0;
@@ -368,7 +390,6 @@ void swap(int *a, int*b, int x, int y, int x2, int y2) {
 			}
 			if (B == 0) break;
 		}
-
 	}
 
 }
@@ -409,26 +430,29 @@ void ConfirmBoard() {
 
 		}
 	}
-	SetCursors(20, 23);
-	printf("%d", n);
+	if (TEST == T) { SetCursors(20, 23); printf("%d", n); }
 
-	if (n<3) {
+	if (n < 2) {
 		SetCursors(5, 20);
 		printf("더 이상 게임진행이 어렵습니다.");
 		SetCursors(5, 21);
 		printf("게임을 계속하려면 space,그만둘려면 esc를 눌러주세요.");
 		ip = _getch();
 		switch (ip) {
-		case SPACE: {
-
+		case ESC: system("cls"); exit(1); break;
+		case UP:
+		case DOWN:
+		case LEFT:
+		case RIGHT:
+		case SPACE:{
 			SetCursors(5, 20);
 			printf("                                                   ");
 			SetCursors(5, 21);
 			printf("                                                      \n");
 			CreateBoard();
 			StartGame();
-		}break;
-		case ESC: system("cls"); exit(1); break;
+			break;
+		}
 		}
 	}
 }
@@ -447,7 +471,7 @@ int StartGame() {
 	SetCursors(50, 8);
 	printf("Level:%d", level);
 	SetCursors(50, 9);
-	printf("Time:%d", timer);
+	printf("Time: %d", timer);
 	SetCursors(50, 10);
 	printf("score:%d", score);
 
@@ -475,7 +499,35 @@ int StartGame() {
 	BackColor('G');
 	DrawBoard(x, y);
 
+	work = 1;
 	while (1) {
+		if( start > end) fevt = fevt + (start - end);
+
+		if (TEST == T) { SetCursors(50, 14); printf("%03d", (end - fevt) / CLOCKS_PER_SEC); }
+
+
+		if ((end - fevt) / CLOCKS_PER_SEC >= 5) {
+			fever(0);
+		}
+
+		end = clock();
+		timer = -((start - end) / CLOCKS_PER_SEC);
+		BackColor(' ');
+		color(15);
+		SetCursors(56, 9);
+		printf("%02d", timer);
+
+		if (timer > t_limit) {
+			BackColor(' ');
+			color(15);
+			SetCursors(50, 7);
+			printf("Game Over");
+			Sleep(2000);
+			system("cls");
+			exit(1);
+		}
+		
+
 		if (_kbhit()) {
 
 			if (sel != T) {
@@ -538,6 +590,7 @@ int StartGame() {
 // 보드 배열 만들기(main3).
 void CreateBoard(void)
 {
+	work = 0;
 	srand(time(0));
 
 	int board_width, board_height;
