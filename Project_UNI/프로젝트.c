@@ -152,9 +152,12 @@ void fever(int count) {
 	if (count == 0) fev_lev = 1;
 	else if(count > 3){
 		fev_lev += (count - 3);
-		if (TEST == T) { SetCursors(50, 13); printf("fev = %2d", fev_lev); }
 		fevt = clock();
 	}
+	BackColor(' ');
+	color(15);
+	SetCursors(58, 11);
+	printf("%2d", fev_lev);
 }
 
 
@@ -253,11 +256,13 @@ int Bomb(int x, int y, int O) {
 	if (TEST == T) { SetCursors(20, 25); printf("%d", count); }
 
 	if (count >= 3) {
-		printf("\a");
-		BackColor(' ');
-		//DrawBoard(x, y);
-		if (O == 1) score += (count) * 10 * fev_lev;
-		if(work == 1) fever(count);
+		if (O == 1) {
+			printf("\a");
+			BackColor(' ');
+			//DrawBoard(x, y);
+			score += (count)* 10 * fev_lev;
+			if (work == 1) fever(count);
+		}
 		return count;
 	}
 
@@ -474,6 +479,8 @@ int StartGame() {
 	printf("Time: %d", timer);
 	SetCursors(50, 10);
 	printf("score:%d", score);
+	SetCursors(50, 11);
+	printf("fever: %2d", fev_lev);
 
 
 
@@ -501,12 +508,12 @@ int StartGame() {
 
 	work = 1;
 	while (1) {
-		if( start > end) fevt = fevt + (start - end);
+		if( start > end) fevt = fevt + (start - end) / 2;
 
 		if (TEST == T) { SetCursors(50, 14); printf("%03d", (end - fevt) / CLOCKS_PER_SEC); }
 
 
-		if ((end - fevt) / CLOCKS_PER_SEC >= 5) {
+		if ((end - fevt) / CLOCKS_PER_SEC == 10) {
 			fever(0);
 		}
 
@@ -517,6 +524,7 @@ int StartGame() {
 		SetCursors(56, 9);
 		printf("%02d", timer);
 
+		/*
 		if (timer > t_limit) {
 			BackColor(' ');
 			color(15);
@@ -526,6 +534,7 @@ int StartGame() {
 			system("cls");
 			exit(1);
 		}
+		*/
 		
 
 		if (_kbhit()) {
