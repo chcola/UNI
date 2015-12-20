@@ -19,7 +19,7 @@
 #define true 1
 #define T 1
 #define false 0
-#define F 0
+#define F 0 
 #define bool int
 
 
@@ -170,8 +170,16 @@ void fever(int count) {
 	}
 	BackColor(' ');
 	color(15);
+	SetCursors(58,12);
+	printf("%02d",fev_lev);
 	SetCursors(58, 11);
-	printf("%2d", fev_lev);
+	if(fev_lev==1)printf("off");
+	else { 
+	SetCursors(58, 11);
+	printf("      ");
+	SetCursors(58, 11);
+	printf("on");
+	}
 }
 
 
@@ -247,16 +255,7 @@ int Bomb(int x, int y, int O) {
 	Bomb_Width(x, y, bomb);
 	Bomb_Height(x, y, bomb);
 
-	//bomb를 확인하기위해  bomb출력 나중에 삭제
-	if (TEST == T) {
-		SetCursors(0, 23);
-		for (a = 0; a < 8; a++) {
-			for (b = 0; b < 8; b++) {
-				printf("%d ", bomb[b][a]);
-			}
-			printf("\n");
-		}
-	}
+	
 
 	for (b = 0; b < BOARD_HEIGHT; b++) {
 		for (a = 0; a < BOARD_WIDTH; a++) {
@@ -531,7 +530,9 @@ int StartGame() {
 	SetCursors(50, 10);
 	printf("score:%d", score);
 	SetCursors(50, 11);
-	printf("fever: %2d", fev_lev);
+	printf("fever:  off");
+	SetCursors(50,12);
+	printf("fev_lev: 0");
 
 
 	while (1) {
