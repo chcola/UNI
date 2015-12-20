@@ -22,7 +22,9 @@
 #define F 0
 #define bool int
 
+
 #define TEST T //시험중
+
 
 #define BOARD_WIDTH 8        // 게임 영역의 가로(열) : ━
 #define BOARD_HEIGHT 8        // 게임 영역의 세로(행) : ┃
@@ -34,10 +36,20 @@
 static int score = 0; //게임점수
 static int level = 1; //게임레벨
 static int speed = 500;
-int board[BOARD_HEIGHT][BOARD_WIDTH] = { 0, };
+
+static clock_t start, end;
+static long timer = 0;
+static long t_limit = 15;
+static int s_limit = 3000;
+
+static clock_t fevt;
+int fev_lev = 1;
+
+int board[BOARD_WIDTH + 2][BOARD_HEIGHT + 2] = { 0, };
 int *s;
 int Bcolor = 0;
 int RANDOM = 5;
+int work = 0;
 
 
 // 키보드의 방향키와 스페이스에 대한 열거형 지정
@@ -51,6 +63,11 @@ enum ControlKeys
 	RIGHT = 77,
 	SPACE = 32,
 	ESC = 27
+};
+
+struct Record {
+	char name[30];
+	int Level;
 };
 
 
@@ -69,6 +86,7 @@ void CursorVisible(bool blnCursorVisible)    // Console.CursorVisible = false;
 void color(int n) {
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), Bcolor + n);
 }
+
 // 백그라운드 색을 지정하는 함수.
 // 이 후에 color 함수를 사용해야 적용된다.
 void BackColor(char t) {
@@ -111,11 +129,9 @@ void gotoxy(int x, int y, const char* s)
 // 보드 배열 표시하기
 // by 한나
 void DrawBoard(int i, int j) {
-	if (i >= 0 && i<8 && j >= 0 && j<8) {
+	if (i >= 0 && i < BOARD_WIDTH&& j >= 0 && j < BOARD_HEIGHT) {
 		switch (board[i][j]) {
-		case 5: {color(14);
-			gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "★");
-		}break;
+
 		case 1: {color(11);
 			gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "◆"); }break;
 		case 2: {color(12);
@@ -124,12 +140,29 @@ void DrawBoard(int i, int j) {
 			gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "♣"); }break;
 		case 4: {color(9);
 			gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "♠"); }break;
+		case 5: {color(14);
+			gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "★"); }break;
+		case 6: {color(13);
+			gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "▲"); }break;
 		case 0:
 			gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "  ");
 			break;
 		} //else 종료
 	}
 	SetCursors(7, 3);
+}
+
+
+void fever(int count) {
+	if (count == 0) fev_lev = 1;
+	else if (count > 3) {
+		fev_lev += (count - 3);
+		fevt = clock();
+	}
+	BackColor(' ');
+	color(15);
+	SetCursors(58, 11);
+	printf("%2d", fev_lev);
 }
 
 
@@ -145,13 +178,15 @@ void Bomb_Height(int x, int y, int(*bomb)[BOARD_HEIGHT]) {
 	}
 
 	plus--; minus++;
+	if (plus>7)plus--;
+	if (minus<0)minus++;
 	temp = plus - minus;
 
 	if (temp >= 3 - 1) {
 
 		if (TEST == T) {
 			SetCursors(0, 4);
-			printf("%d %d", plus, minus);
+			printf("p:%d m:%d", plus, minus);
 		}
 
 		//BackColor('C');
@@ -175,13 +210,16 @@ void Bomb_Width(int x, int y, int(*bomb)[BOARD_HEIGHT]) {
 	}
 
 	plus--; minus++;
+	if (plus>7)plus--;
+	if (minus<0)minus++;
+
 	temp = plus - minus;
 
 	if (temp >= 3 - 1) {
 
 		if (TEST == T) {
 			SetCursors(0, 3);
-			printf("%d %d", plus, minus);
+			printf("p:%d  m:%d", plus, minus);
 		}
 
 		//BackColor('C');
@@ -197,9 +235,19 @@ int Bomb(int x, int y, int O) {
 	int bomb[BOARD_WIDTH][BOARD_HEIGHT] = { 0, };
 	int a, b, count = 0;
 
-
 	Bomb_Width(x, y, bomb);
 	Bomb_Height(x, y, bomb);
+
+	//bomb를 확인하기위해  bomb출력 나중에 삭제
+	if (TEST == T) {
+		SetCursors(0, 23);
+		for (a = 0; a < 8; a++) {
+			for (b = 0; b < 8; b++) {
+				printf("%d ", bomb[b][a]);
+			}
+			printf("\n");
+		}
+	}
 
 	for (b = 0; b < BOARD_HEIGHT; b++) {
 		for (a = 0; a < BOARD_WIDTH; a++) {
@@ -210,13 +258,20 @@ int Bomb(int x, int y, int O) {
 		}
 	}
 
-	if (count >= 3 && O == 1) {
-		printf("\a");
-		BackColor(' ');
-		DrawBoard(x, y);
-		score += (count)* 10;
+	if (TEST == T) { SetCursors(20, 25); printf("%d", count); }
+
+	if (count >= 3) {
+		if (O == 1) {
+			printf("\a");
+			BackColor(' ');
+			//DrawBoard(x, y);
+			score += (count)* 10 * fev_lev;
+			if (work == 1) fever(count);
+		}
+		return count;
 	}
-	return count;
+
+	return 0;
 }
 
 
@@ -228,24 +283,25 @@ void drop() {
 
 	while (1) {
 		Q = 0;
-		for (i = 0; i<8; i++) {
-			for (j = 0; j<8; j++) {
+		for (i = 0; i < BOARD_WIDTH; i++) {
+			for (j = 0; j < BOARD_HEIGHT; j++) {
 				if (board[i][j] == 0)
 				{
-					board[i][j] = board[i][j - 1];
-					DrawBoard(i, j);
-					Sleep(75);
-					board[i][j - 1] = 0;
-					if (j - 1 >= 0)
-						DrawBoard(i, j - 1);
-					Sleep(75);
-				}
+					if (j - 1 >= 0) {
+						board[i][j] = board[i][j - 1];
+						DrawBoard(i, j);
 
+						if (TEST == T) Sleep(75);	// 시험중
+						board[i][j - 1] = 0;
+						DrawBoard(i, j - 1);
+						Sleep(75);
+					}
+				}
 			}
 		}
 
-		for (i = 0; i<8; i++) {
-			for (j = 0; j<8; j++) {
+		for (i = 0; i < BOARD_WIDTH; i++) {
+			for (j = 0; j < BOARD_HEIGHT; j++) {
 				if (board[i][0] == 0) {
 					board[i][j] = rand() % RANDOM + 1;
 					DrawBoard(i, j);
@@ -254,8 +310,8 @@ void drop() {
 			}
 		}
 
-		for (i = 0; i<8; i++) {
-			for (j = 0; j<8; j++) {
+		for (i = 0; i < BOARD_WIDTH; i++) {
+			for (j = 0; j < BOARD_HEIGHT; j++) {
 				if (board[i][j] != 0) {
 					Q++;
 				}
@@ -267,7 +323,16 @@ void drop() {
 	BackColor(' ');
 	color(15);
 	SetCursors(50, 10);
-	printf("score:%d", score);
+	printf("score:%5d", score);
+	if (score > s_limit && timer <= t_limit) {
+		level++;
+		if (level % 2 == 0) t_limit -= 3;
+		if (level % 2 == 1) RANDOM++;
+		score = 0;
+	}
+
+	else if ((end - start)>500);
+	start = clock();
 }
 
 // by 한나
@@ -303,13 +368,30 @@ void swap(int *a, int*b, int x, int y, int x2, int y2) {
 		DrawBoard(x2, y2);
 	}
 	else {
+		/*
+		end = clock();
+		timer = -((start - end) / CLOCKS_PER_SEC);
+		BackColor(' ');
+		color(15);
+
+		SetCursors(50, 9);
+		printf("              ");
+		SetCursors(50, 9);
+		printf("Time: %02d", timer);
+
+		SetCursors(56, 9);
+		printf("%02d", timer);
+		*/
+
 		//Sleep(800);
+
+
 		drop();
 
 		while (1) {
 			B = 0;
-			for (i = 0; i < 8; i++) {
-				for (j = 0; j < 8; j++) {
+			for (i = 0; i < BOARD_WIDTH; i++) {
+				for (j = 0; j < BOARD_HEIGHT; j++) {
 					Sleep(10);
 					A = Bomb(i, j, 1);
 					drop();
@@ -319,6 +401,7 @@ void swap(int *a, int*b, int x, int y, int x2, int y2) {
 			if (B == 0) break;
 		}
 	}
+
 }
 
 // 맞출 수 있는 것이 3개 이상인지 확인. 없으면 MakeBoard() 재실행
@@ -326,6 +409,7 @@ void swap(int *a, int*b, int x, int y, int x2, int y2) {
 // 오른쪽이랑 바꾸고(바꾸는 함수 구현하여 사용), 오른쪽, 아래랑 3개 되는지 확인.
 // 아래와 바꾸고 반복.
 // 미완!
+int StartGame();
 void CreateBoard();
 void ConfirmBoard() {
 	int i, j, n = 0;
@@ -356,17 +440,36 @@ void ConfirmBoard() {
 
 		}
 	}
+	if (TEST == T) { SetCursors(20, 23); printf("%d", n); }
 
-	if (n<3) {
-		printf("더 이상 게임진행이 어렵습니다.\n");
-		printf("게임을 계속하려면 space,그만둘려면 esc를 눌러주세요.\n");
+	if (n < 2) {
+		SetCursors(5, 20);
+		printf("더 이상 게임진행이 어렵습니다.");
+		SetCursors(5, 21);
+		printf("게임을 계속하려면 space,그만둘려면 esc를 눌러주세요.");
 		ip = _getch();
-		if (ip == SPACE) {
+		switch (ip) {
+		case ESC: system("cls"); exit(1); break;
+		case UP:
+		case DOWN:
+		case LEFT:
+		case RIGHT:
+		case SPACE: {
+			SetCursors(5, 20);
+			printf("                                                   ");
+			SetCursors(5, 21);
+			printf("                                                      \n");
 			CreateBoard();
 			StartGame();
+			break;
 		}
-		if (ip == ESC) exit(1);
+		}
 	}
+}
+
+
+void record_R();
+void record_W() {
 }
 
 
@@ -374,19 +477,26 @@ void ConfirmBoard() {
 // 커서가 가리키는 위치의 유니코드 배경 색 바꾸기.
 // 0,0일때 8 + 2*x, +2* y +3 위치에 배경색 설정 후 printf("유니"); 스위치문 갖다 넣기
 int StartGame() {
+	int i, j, A, B;
 
 	ConfirmBoard();
 
 	BackColor(' ');
 	color(15);
+	SetCursors(50, 8);
+	printf("Level:%d", level);
+	SetCursors(50, 9);
+	printf("Time: %d", timer);
 	SetCursors(50, 10);
 	printf("score:%d", score);
+	SetCursors(50, 11);
+	printf("fever: %2d", fev_lev);
 
-	int i, j, A, B;
+
 	while (1) {
 		B = 0;
-		for (i = 0; i<8; i++) {
-			for (j = 0; j<8; j++) {
+		for (i = 0; i < BOARD_WIDTH; i++) {
+			for (j = 0; j < BOARD_HEIGHT; j++) {
 				Sleep(50);
 				A = Bomb(i, j, 1);
 
@@ -405,7 +515,35 @@ int StartGame() {
 	BackColor('G');
 	DrawBoard(x, y);
 
+	work = 1;
 	while (1) {
+		if (start > end) fevt = fevt + (start - end) / 2;
+
+		if (TEST == T) { SetCursors(50, 14); printf("%03d", (end - fevt) / CLOCKS_PER_SEC); }
+
+
+		if ((end - fevt) / CLOCKS_PER_SEC == 10) {
+			fever(0);
+		}
+
+		end = clock();
+		timer = -((start - end) / CLOCKS_PER_SEC);
+		BackColor(' ');
+		color(15);
+		SetCursors(56, 9);
+		printf("%02d", timer);
+
+		if (timer > t_limit) {
+			BackColor(' ');
+			color(15);
+			SetCursors(50, 7);
+			printf("Game Over");
+			Sleep(2000);
+			system("cls");
+			record_W();
+			exit(1);
+		}
+
 		if (_kbhit()) {
 
 			if (sel != T) {
@@ -428,8 +566,15 @@ int StartGame() {
 			case DOWN: sel = F; if (y < BOARD_HEIGHT - 1) y += 1; DrawBoard(x, y); break;
 			case SPACE:sel = T; if ((x1 == x2 + 1 && y1 == y2) || (x1 == x2&&y1 == y2 + 1) || (x1 == x2 - 1 && y1 == y2) || (x1 == x2&&y1 == y2 - 1) || count == 0)BackColor('W'); DrawBoard(x, y);  count++; if (count == 1) { x2 = x; y2 = y; }
 					   if (count >= 2) {
+
+						   BackColor(' ');
+						   color(15);
+						   SetCursors(50, 8);
+						   printf("Level:%d", level);
+
 						   BackColor(' ');
 						   if ((x1 == x2 + 1 && y1 == y2) || (x1 == x2&&y1 == y2 + 1) || (x1 == x2 - 1 && y1 == y2) || (x1 == x2&&y1 == y2 - 1)) {
+
 							   swap(&board[x][y], &board[x2][y2], x, y, x2, y2);
 							   ConfirmBoard();
 						   }
@@ -439,7 +584,9 @@ int StartGame() {
 						   //DrawBoard(x2, y2);
 						   count = 0;
 						   x2 = -1; y2 = -1;
-					   } break;
+					   }
+
+					   break;
 
 			case ESC: sel = F; system("cls"); exit(1); break;
 			}
@@ -447,10 +594,10 @@ int StartGame() {
 			x1 = x; y1 = y;
 
 			sel = F;
+
 			SetCursors(0, 0);
 			if (TEST == T) printf("%d  %d\n%d  %d %d \n %d", x1, y1, x2, y2, count, sel);
 		}
-
 	}
 }
 
@@ -458,6 +605,7 @@ int StartGame() {
 // 보드 배열 만들기(main3).
 void CreateBoard(void)
 {
+	work = 0;
 	srand(time(0));
 
 	int board_width, board_height;
@@ -556,7 +704,6 @@ void DrawField(void)
 	{
 		board[2 * BOARD_HEIGHT][x] = 1; //board 배열 중앙 1인식
 		gotoxy(BOARD_X + x, BOARD_Y, "─");  //콘솔좌표
-
 	}
 
 	//아래 보드 라인
@@ -607,6 +754,7 @@ void DrawField(void)
 //게임 설명(main1).
 void ConsoleInit()
 {
+	char ip = '\0';
 	// 콘솔 초기화 및 시작 화면 구성 영역
 	gotoxy(0, 0, "c언어 콘솔 테트리스");
 	gotoxy(0, 1, "");
@@ -620,10 +768,18 @@ void ConsoleInit()
 	gotoxy(0, 10, "아무키나 누르면 시작됩니다.");
 	gotoxy(0, 11, "===================================");
 
-	_getch();
-	system("cls");            // Console.Clear();
-	CursorVisible(false);    // 커서 숨기기
-	SetCursors(0, 0); //보드표시 시작위치 설정
+	ip = _getch();
+
+	if (ip == 82 || ip == 114) {
+		system("cls");
+		record_R();
+
+	}
+	else {
+		system("cls");            // Console.Clear();
+		CursorVisible(false);    // 커서 숨기기
+		SetCursors(0, 0); //보드표시 시작위치 설정
+	}
 }
 
 
@@ -634,4 +790,32 @@ int main() {
 	StartGame();
 
 	SetCursors(0, 0);
+}
+
+void record_R() {
+	struct Record r[10];
+	int i;
+	char ip = '\0';
+	FILE *f;
+	f = fopen("record.txt", "r");
+
+	for (i = 0; i<10; i++)
+		fscanf(f, "%s %d\n", r[i].name, &r[i].Level);
+	fclose(f);
+
+	printf("이름   점수\n");
+	printf("------------------\n");
+	for (i = 0; i<10; i++)
+		printf("%s %d\n", r[i].name, r[i].Level);
+
+	ip = _getch();
+
+	if (ip == ESC)exit(0);
+	else {
+		system("cls");
+		ConsoleInit();
+		DrawField();
+		CreateBoard();
+		StartGame();
+	}
 }

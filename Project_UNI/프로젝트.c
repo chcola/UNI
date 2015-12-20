@@ -32,6 +32,7 @@
 #define BOARD_X 4 //보드 열 x좌표
 #define BOARD_Y 2 //보드 행 y좌표
 
+#define size 0
 
 static int score = 0; //게임점수
 static int level = 1; //게임레벨
@@ -52,6 +53,7 @@ int RANDOM = 5;
 int work = 0;
 
 
+
 // 키보드의 방향키와 스페이스에 대한 열거형 지정
 // _getch()가 반환하는 값이
 // 인터넷 참고
@@ -63,6 +65,12 @@ enum ControlKeys
 	RIGHT = 77,
 	SPACE = 32,
 	ESC = 27
+};
+
+struct Record {
+	char name[30];
+	int Level;
+	int Score;
 };
 
 
@@ -139,6 +147,12 @@ void DrawBoard(int i, int j) {
 			gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "★"); }break;
 		case 6: {color(13);
 			gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "▲"); }break;
+		case 7: {color(11);
+			gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "◇"); }break;
+		case 8: {color(12);
+			gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "♡"); }break;
+		case 9: {color(10);
+			gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "♧"); }break;
 		case 0:
 			gotoxy(2 + BOARD_X + i * 2, 1 + BOARD_Y + j * 2, "  ");
 			break;
@@ -150,7 +164,7 @@ void DrawBoard(int i, int j) {
 
 void fever(int count) {
 	if (count == 0) fev_lev = 1;
-	else if(count > 3){
+	else if (count > 3) {
 		fev_lev += (count - 3);
 		fevt = clock();
 	}
@@ -373,7 +387,7 @@ void swap(int *a, int*b, int x, int y, int x2, int y2) {
 		printf("              ");
 		SetCursors(50, 9);
 		printf("Time: %02d", timer);
-		
+
 		SetCursors(56, 9);
 		printf("%02d", timer);
 		*/
@@ -449,7 +463,7 @@ void ConfirmBoard() {
 		case DOWN:
 		case LEFT:
 		case RIGHT:
-		case SPACE:{
+		case SPACE: {
 			SetCursors(5, 20);
 			printf("                                                   ");
 			SetCursors(5, 21);
@@ -460,6 +474,43 @@ void ConfirmBoard() {
 		}
 		}
 	}
+}
+
+
+void record_R();
+void record_W() {
+	struct Record r[10];
+	int i;
+	char NAME[30];
+	FILE *f;
+
+	f = fopen("record.txt", "r");
+
+	for (i = 0; i<10; i++)
+		fscanf(f, "%s %d %d\n", r[i].name, &r[i].Level, &r[i].Score);
+	fclose(f);
+
+	for (i = 8; i >= 0; i--) {
+
+		strcpy(r[i + 1].name, r[i].name);
+		r[i + 1].Level = r[i].Level;
+		r[i + 1].Score = r[i].Score;
+
+	}
+
+	printf("사용자의 이름을 입력하시오.\n");
+
+	gets(r[size].name);
+	r[size].Level = level;
+	r[size].Score = score;
+
+	f = fopen("record.txt", "w");
+
+	for (i = 0; i<10; i++) {
+		fprintf(f, "%s %d %d\n", r[i].name, r[i].Level, r[i].Score);
+	}
+	fclose(f);
+
 }
 
 
@@ -476,12 +527,11 @@ int StartGame() {
 	SetCursors(50, 8);
 	printf("Level:%d", level);
 	SetCursors(50, 9);
-	printf("Time: %d", timer);
+	printf("Time: %d ", timer);
 	SetCursors(50, 10);
 	printf("score:%d", score);
 	SetCursors(50, 11);
 	printf("fever: %2d", fev_lev);
-
 
 
 	while (1) {
@@ -508,7 +558,7 @@ int StartGame() {
 
 	work = 1;
 	while (1) {
-		if( start > end) fevt = fevt + (start - end) / 2;
+		if (start > end) fevt = fevt + (start - end) / 2;
 
 		if (TEST == T) { SetCursors(50, 14); printf("%03d", (end - fevt) / CLOCKS_PER_SEC); }
 
@@ -523,8 +573,11 @@ int StartGame() {
 		color(15);
 		SetCursors(56, 9);
 		printf("%02d", timer);
+		SetCursors(60, 9);
+		printf("      ");
+		SetCursors(60, 9);
+		printf("/%d", t_limit);
 
-		/*
 		if (timer > t_limit) {
 			BackColor(' ');
 			color(15);
@@ -532,10 +585,9 @@ int StartGame() {
 			printf("Game Over");
 			Sleep(2000);
 			system("cls");
+			record_W();
 			exit(1);
 		}
-		*/
-		
 
 		if (_kbhit()) {
 
@@ -591,7 +643,6 @@ int StartGame() {
 			SetCursors(0, 0);
 			if (TEST == T) printf("%d  %d\n%d  %d %d \n %d", x1, y1, x2, y2, count, sel);
 		}
-
 	}
 }
 
@@ -677,6 +728,7 @@ void CreateBoard(void)
 	board[7][6] = 5;
 	board[7][7] = 5;
 	*/
+
 	int i, j;
 	ConfirmBoard(); //보드에 맞출 수 있는것이 3개 이상인지 확인, 없으면 MakeBoard 실행
 	for (i = 0; i < BOARD_WIDTH; i++) {
@@ -697,7 +749,6 @@ void DrawField(void)
 	{
 		board[2 * BOARD_HEIGHT][x] = 1; //board 배열 중앙 1인식
 		gotoxy(BOARD_X + x, BOARD_Y, "─");  //콘솔좌표
-
 	}
 
 	//아래 보드 라인
@@ -748,23 +799,33 @@ void DrawField(void)
 //게임 설명(main1).
 void ConsoleInit()
 {
+	char ip = '\0';
 	// 콘솔 초기화 및 시작 화면 구성 영역
-	gotoxy(0, 0, "c언어 콘솔 테트리스");
-	gotoxy(0, 1, "");
-	gotoxy(0, 2, "=================================== ");
-	gotoxy(0, 3, "조작법:");
-	gotoxy(0, 4, "[→]     커서를 오른쪽으로 이동");
-	gotoxy(0, 5, "[←]     커서를 왼쪽으로 이동");
-	gotoxy(0, 6, "[↑]     커서를 왼쪽으로 이동");
-	gotoxy(0, 7, "[↓]     커서를 아래로 이동");
-	gotoxy(0, 8, "[Space]  커서가 가리키는 블럭 선택");
-	gotoxy(0, 10, "아무키나 누르면 시작됩니다.");
-	gotoxy(0, 11, "===================================");
+	gotoxy(7, 4, "c언어 콘솔 테트리스");
+	gotoxy(3, 5, "");
+	gotoxy(3, 6, "=================================== ");
+	gotoxy(3, 7, "조작법:");
+	gotoxy(3, 8, "[→]     커서를 오른쪽으로 이동");
+	gotoxy(3, 9, "[←]     커서를 왼쪽으로 이동");
+	gotoxy(3, 10, "[↑]     커서를 왼쪽으로 이동");
+	gotoxy(3, 11, "[↓]     커서를 아래로 이동");
+	gotoxy(3, 12, "[Space]  커서가 가리키는 블럭 선택");
+	gotoxy(3, 13, "[R,r]    누적기록을 볼 수 있습니다");
+	gotoxy(3, 15, "아무키나 누르면 시작됩니다.");
+	gotoxy(3, 16, "===================================");
 
-	_getch();
-	system("cls");            // Console.Clear();
-	CursorVisible(false);    // 커서 숨기기
-	SetCursors(0, 0); //보드표시 시작위치 설정
+	ip = _getch();
+
+	if (ip == 82 || ip == 114) {
+		system("cls");
+		record_R();
+
+	}
+	else {
+		system("cls");            // Console.Clear();
+		CursorVisible(false);    // 커서 숨기기
+		SetCursors(0, 0); //보드표시 시작위치 설정
+	}
 }
 
 
@@ -775,4 +836,33 @@ int main() {
 	StartGame();
 
 	SetCursors(0, 0);
+}
+
+void record_R() {
+	struct Record r[10];
+	int i;
+	char ip = '\0';
+	FILE *f;
+	f = fopen("record.txt", "r");
+
+	for (i = 0; i<10; i++)
+		fscanf(f, "%s %d %d\n", r[i].name, &r[i].Level, &r[i].Score);
+	fclose(f);
+
+	printf(" 이름 Lv 점수\n");
+	printf("-----------------\n");
+	for (i = 0; i<10; i++)
+		printf("%s %d %d\n", r[i].name, r[i].Level, r[i].Score);
+	printf("\n아무키나 누르면 메인화면");
+
+	ip = _getch();
+
+	if (ip == ESC)exit(0);
+	else {
+		system("cls");
+		ConsoleInit();
+		DrawField();
+		CreateBoard();
+		StartGame();
+	}
 }
