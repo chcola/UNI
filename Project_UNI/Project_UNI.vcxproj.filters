@@ -15,22 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="테트리스.c">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="승식.c">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Project.c">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="multithread.c">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="프로젝트.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="소스.TXT">
+    <ClCompile Include="test용.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

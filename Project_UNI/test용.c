@@ -24,7 +24,7 @@
 
 
 #define TEST F //시험중
-#define noCF T
+#define noCF F
 
 
 #define BOARD_WIDTH 8        // 게임 영역의 가로(열) : ━
@@ -526,7 +526,7 @@ void record_W() {
 int StartGame() {
 	int i, j, A, B;
 
-	if(noCF == F) ConfirmBoard();
+	if (noCF == F) ConfirmBoard();
 
 	BackColor(' ');
 	color(15);
@@ -625,7 +625,7 @@ int StartGame() {
 						   if ((x1 == x2 + 1 && y1 == y2) || (x1 == x2&&y1 == y2 + 1) || (x1 == x2 - 1 && y1 == y2) || (x1 == x2&&y1 == y2 - 1)) {
 
 							   swap(&board[x][y], &board[x2][y2], x, y, x2, y2);
-							   if(noCF == F) ConfirmBoard();
+							   if (noCF == F) ConfirmBoard();
 						   }
 
 						   BackColor(' ');
@@ -666,7 +666,7 @@ void CreateBoard(void)
 		}
 	}
 
-	/*
+	
 	board[0][0] = 1;
 	board[0][1] = 1;
 	board[0][2] = 2;
@@ -731,7 +731,7 @@ void CreateBoard(void)
 	board[7][5] = 4;
 	board[7][6] = 5;
 	board[7][7] = 5;
-	*/
+	
 
 	int i, j;
 	//if(noCF == F) ConfirmBoard(); //보드에 맞출 수 있는것이 3개 이상인지 확인, 없으면 MakeBoard 실행
